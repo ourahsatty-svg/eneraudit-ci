@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnerAudit CI — Plateforme d'Audit Énergétique DGE</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --vert: #00C896;
+  --vert-fonce: #007A5E;
+  --vert-pale: #E6FBF5;
+  --bleu: #0B2E4E;
+  --bleu-mid: #1A4A72;
+  --or: #F5A623;
+  --gris: #F4F6F9;
+  --gris-bord: #E2E8F0;
+  --texte: #1A2332;
+  --texte-sec: #64748B;
+  --blanc: #FFFFFF;
+  --danger: #EF4444;
+  --shadow: 0 4px 24px rgba(11,46,78,0.08);
+  --shadow-lg: 0 12px 48px rgba(11,46,78,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--texte); min-height:100vh; }
+
+/* NAV */
+nav {
+  background:var(--bleu);
+  padding:0 32px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 16px rgba(0,0,0,0.2);
+}
+.nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:var(--blanc); letter-spacing:-0.5px; }
+.nav-logo span { color:var(--vert); }
+.nav-links { display:flex; gap:8px; align-items:center; }
+.nav-btn {
+  padding:8px 18px;
+  border-radius:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  border:none;
+  transition:all 0.2s;
+}
+.nav-btn-ghost { background:transparent; color:rgba(255,255,255,0.7); }
+.nav-btn-ghost:hover { color:var(--blanc); background:rgba(255,255,255,0.1); }
+.nav-btn-primary { background:var(--vert); color:var(--bleu); font-weight:700; }
+.nav-btn-primary:hover { background:#00E5AD; transform:translateY(-1px); }
+
+/* PAGES */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ========== LANDING ========== */
+#page-landing {
+  min-height:100vh;
+  background:var(--bleu);
+}
+.hero {
+  padding:80px 40px 60px;
+  max-width:900px;
+  margin:0 auto;
+  text-align:center;
+}
+.hero-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(0,200,150,0.15);
+  border:1px solid rgba(0,200,150,0.3);
+  padding:6px 16px;
+  border-radius:100px;
+  margin-bottom:28px;
+}
+.hero-badge span { font-size:12px; color:var(--vert); font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+.hero h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(36px,6vw,68px);
+  font-weight:800;
+  color:var(--blanc);
+  line-height:1.05;
+  letter-spacing:-2px;
+  margin-bottom:24px;
+}
+.hero h1 em { color:var(--vert); font-style:normal; }
+.hero p {
+  font-size:18px;
+  color:rgba(255,255,255,0.65);
+  line-height:1.7;
+  max-width:600px;
+  margin:0 auto 40px;
+}
+.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.btn-hero-main {
+  padding:16px 36px;
+  background:var(--vert);
+  color:var(--bleu);
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-hero-main:hover { background:#00E5AD; transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,200,150,0.4); }
+.btn-hero-sec {
+  padding:16px 36px;
+  background:transparent;
+  color:var(--blanc);
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  font-size:16px;
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-hero-sec:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.5); }
+
+.features-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 32px 80px;
+}
+.feature-card {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;
+  padding:28px;
+  transition:all 0.2s;
+}
+.feature-card:hover { background:rgba(255,255,255,0.08); border-color:rgba(0,200,150,0.3); transform:translateY(-2px); }
+.feature-icon {
+  width:44px; height:44px;
+  background:rgba(0,200,150,0.15);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:16px;
+  font-size:20px;
+}
+.feature-card h3 { font-family:'Syne',sans-serif; font-weight:700; color:var(--blanc); font-size:16px; margin-bottom:8px; }
+.feature-card p { font-size:14px; color:rgba(255,255,255,0.55); line-height:1.6; }
+
+/* ========== AUTH ========== */
+#page-auth {
+  min-height:100vh;
+  background:var(--bleu);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+}
+.auth-card {
+  background:var(--blanc);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;
+  max-width:440px;
+  box-shadow:var(--shadow-lg);
+}
+.auth-card h2 { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; color:var(--bleu); margin-bottom:6px; }
+.auth-card p { font-size:14px; color:var(--texte-sec); margin-bottom:32px; }
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; font-size:13px; font-weight:500; color:var(--texte); margin-bottom:6px; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%;
+  padding:12px 14px;
+  border:1.5px solid var(--gris-bord);
+  border-radius:10px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  color:var(--texte);
+  background:var(--blanc);
+  transition:border-color 0.2s;
+  outline:none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color:var(--vert);
+  box-shadow:0 0 0 3px rgba(0,200,150,0.12);
+}
+.btn-primary {
+  width:100%;
+  padding:14px;
+  background:var(--vert);
+  color:var(--bleu);
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all 0.2s;
+  margin-top:8px;
+}
+.btn-primary:hover { background:#00E5AD; transform:translateY(-1px); }
+.auth-switch { text-align:center; margin-top:20px; font-size:13px; color:var(--texte-sec); }
+.auth-switch a { color:var(--vert-fonce); font-weight:600; cursor:pointer; text-decoration:none; }
+
+/* ========== APP LAYOUT ========== */
+#page-app { display:none; }
+#page-app.active { display:flex; min-height:100vh; }
+.sidebar {
+  width:240px;
+  background:var(--bleu);
+  padding:24px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+}
+.sidebar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:var(--blanc); padding:0 12px 24px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:12px; }
+.sidebar-logo span { color:var(--vert); }
+.sidebar-section { font-size:10px; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:1.5px; text-transform:uppercase; padding:12px 12px 6px; }
+.sidebar-item {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  color:rgba(255,255,255,0.6);
+  font-size:14px;
+  font-weight:400;
+  transition:all 0.15s;
+  border:none;
+  background:none;
+  width:100%;
+  text-align:left;
+}
+.sidebar-item:hover { background:rgba(255,255,255,0.08); color:var(--blanc); }
+.sidebar-item.active { background:rgba(0,200,150,0.15); color:var(--vert); font-weight:500; }
+.sidebar-item svg { width:16px; height:16px; flex-shrink:0; }
+.app-main { flex:1; padding:32px; overflow-y:auto; background:var(--gris); }
+
+/* SECTIONS */
+.app-section { display:none; }
+.app-section.active { display:block; }
+
+/* PAGE HEADER */
+.page-header { margin-bottom:28px; }
+.page-header h2 { font-family:'Syne',sans-serif; font-weight:700; font-size:24px; color:var(--bleu); }
+.page-header p { font-size:14px; color:var(--texte-sec); margin-top:4px; }
+
+/* STATS GRID */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.stat-card {
+  background:var(--blanc);
+  border-radius:14px;
+  padding:20px 22px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--gris-bord);
+}
+.stat-card .stat-label { font-size:12px; color:var(--texte-sec); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+.stat-card .stat-value { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--bleu); }
+.stat-card .stat-unit { font-size:13px; color:var(--texte-sec); margin-left:4px; }
+.stat-card .stat-change { font-size:12px; margin-top:6px; color:var(--vert-fonce); font-weight:500; }
+
+/* CARDS */
+.card {
+  background:var(--blanc);
+  border-radius:14px;
+  padding:24px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--gris-bord);
+  margin-bottom:20px;
+}
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.card-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; color:var(--bleu); }
+
+/* TABLE */
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; font-size:12px; font-weight:600; color:var(--texte-sec); text-transform:uppercase; letter-spacing:0.5px; padding:10px 14px; border-bottom:2px solid var(--gris-bord); }
+td { padding:12px 14px; font-size:14px; border-bottom:1px solid var(--gris); }
+tr:hover td { background:var(--gris); }
+.badge {
+  display:inline-flex;
+  align-items:center;
+  padding:3px 10px;
+  border-radius:100px;
+  font-size:11px;
+  font-weight:600;
+}
+.badge-green { background:#DCFCE7; color:#166534; }
+.badge-orange { background:#FEF3C7; color:#92400E; }
+.badge-blue { background:#DBEAFE; color:#1E40AF; }
+
+/* BOUTONS */
+.btn-sm {
+  padding:7px 14px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all 0.15s;
+  font-family:'DM Sans',sans-serif;
+}
+.btn-outline { background:transparent; border:1.5px solid var(--gris-bord); color:var(--texte); }
+.btn-outline:hover { border-color:var(--vert); color:var(--vert-fonce); }
+.btn-success { background:var(--vert); color:var(--bleu); font-weight:700; }
+.btn-success:hover { background:#00E5AD; }
+.btn-danger { background:#FEE2E2; color:var(--danger); }
+.btn-info { background:#DBEAFE; color:#1E40AF; }
+
+/* FORM GRID */
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-grid.three { grid-template-columns:1fr 1fr 1fr; }
+.form-full { grid-column:1/-1; }
+
+/* APE CARDS */
+.ape-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+.ape-card {
+  background:var(--blanc);
+  border:1px solid var(--gris-bord);
+  border-radius:14px;
+  padding:20px;
+  border-left:4px solid var(--vert);
+  transition:all 0.2s;
+}
+.ape-card:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
+.ape-card h4 { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; color:var(--bleu); margin-bottom:10px; }
+.ape-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.ape-meta-item { background:var(--gris); border-radius:8px; padding:8px 10px; }
+.ape-meta-item .ape-meta-label { font-size:10px; color:var(--texte-sec); font-weight:600; text-transform:uppercase; }
+.ape-meta-item .ape-meta-value { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--bleu); margin-top:2px; }
+
+/* RAPPORT */
+.rapport-section { background:var(--gris); border-radius:10px; padding:16px 18px; margin-bottom:10px; border-left:3px solid var(--vert); }
+.rapport-section h4 { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--bleu); margin-bottom:4px; }
+.rapport-section p { font-size:13px; color:var(--texte-sec); line-height:1.6; }
+
+/* PROGRESS */
+.progress-bar { background:var(--gris-bord); border-radius:100px; height:8px; overflow:hidden; margin:6px 0; }
+.progress-fill { height:100%; border-radius:100px; background:var(--vert); transition:width 0.8s ease; }
+
+/* CHAT IA */
+.chat-container { height:400px; overflow-y:auto; border:1.5px solid var(--gris-bord); border-radius:12px; padding:16px; margin-bottom:12px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:80%; padding:12px 16px; border-radius:12px; font-size:14px; line-height:1.6; }
+.msg-user { align-self:flex-end; background:var(--vert); color:var(--bleu); font-weight:500; border-radius:12px 12px 4px 12px; }
+.msg-ai { align-self:flex-start; background:var(--blanc); border:1px solid var(--gris-bord); color:var(--texte); border-radius:12px 12px 12px 4px; }
+.msg-ai strong { color:var(--vert-fonce); }
+.chat-input-row { display:flex; gap:10px; }
+.chat-input-row input { flex:1; padding:12px 14px; border:1.5px solid var(--gris-bord); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; }
+.chat-input-row input:focus { border-color:var(--vert); }
+.chat-input-row button { padding:12px 20px; background:var(--vert); border:none; border-radius:10px; font-weight:700; color:var(--bleu); cursor:pointer; font-family:'Syne',sans-serif; }
+
+/* LOADING */
+.loading-overlay {
+  position:fixed; inset:0; background:rgba(11,46,78,0.85);
+  display:flex; align-items:center; justify-content:center;
+  z-index:999; display:none; flex-direction:column; gap:16px;
+}
+.loading-overlay.active { display:flex; }
+.spinner {
+  width:48px; height:48px;
+  border:4px solid rgba(0,200,150,0.2);
+  border-top:4px solid var(--vert);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-overlay p { color:var(--blanc); font-family:'Syne',sans-serif; font-size:16px; font-weight:600; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; right:24px;
+  background:var(--bleu);
+  color:var(--blanc);
+  padding:14px 20px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:500;
+  border-left:4px solid var(--vert);
+  transform:translateY(100px);
+  opacity:0;
+  transition:all 0.3s;
+  z-index:999;
+  max-width:320px;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+
+@media(max-width:768px) {
+  .sidebar { display:none; }
+  .form-grid { grid-template-columns:1fr; }
+  .form-grid.three { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">Analyse en cours...</p>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Ener<span>Audit</span> CI</div>
+  <div class="nav-links" id="navLinks">
+    <button class="nav-btn nav-btn-ghost" onclick="showPage('auth','login')">Connexion</button>
+    <button class="nav-btn nav-btn-primary" onclick="showPage('auth','register')">Commencer</button>
+  </div>
+</nav>
+
+<!-- ==================== LANDING ==================== -->
+<div id="page-landing" class="page active">
+  <div class="hero">
+    <div class="hero-badge"><span>Conforme Modèle DGE Côte d'Ivoire</span></div>
+    <h1>L'IA qui génère vos <em>rapports d'audit</em> énergétiques</h1>
+    <p>Saisissez les données de votre site. Notre IA analyse, calcule les économies et génère automatiquement un rapport complet conforme au modèle DGE en quelques minutes.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-main" onclick="showPage('auth','register')">Créer un compte gratuit</button>
+      <button class="btn-hero-sec" onclick="demoLogin()">Voir la démo</button>
+    </div>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Analyse automatique</h3>
+      <p>Notre IA identifie les usages énergétiques significatifs et les pertes sur votre site.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Rapport DGE conforme</h3>
+      <p>15 sections générées automatiquement selon le modèle officiel de la DGE Côte d'Ivoire.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💡</div>
+      <h3>Actions d'amélioration</h3>
+      <p>APE générées avec économies estimées, coût d'investissement et ROI calculés.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>Export Word (.docx)</h3>
+      <p>Téléchargez votre rapport modifiable, prêt à soumettre à la DGE.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>Assistant IA expert</h3>
+      <p>Posez vos questions techniques à notre assistant spécialisé en efficacité énergétique.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏭</div>
+      <h3>Industrie & Bâtiment</h3>
+      <p>Couvre les deux types de sites conformément aux normes EN 16247 et ISO 50002.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== AUTH ==================== -->
+<div id="page-auth" class="page">
+  <!-- LOGIN -->
+  <div id="form-login" style="display:none">
+    <div style="min-height:calc(100vh - 64px); background:var(--bleu); display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+      <div class="auth-card">
+        <h2>Connexion</h2>
+        <p>Accédez à votre espace d'audit énergétique</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="votre@email.com" value="demo@eneraudit.ci">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="loginPwd" placeholder="••••••••" value="demo123">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+        <div class="auth-switch">Pas de compte ? <a onclick="showPage('auth','register')">Créer un compte</a></div>
+      </div>
+    </div>
+  </div>
+  <!-- REGISTER -->
+  <div id="form-register" style="display:none">
+    <div style="min-height:calc(100vh - 64px); background:var(--bleu); display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+      <div class="auth-card">
+        <h2>Créer un compte</h2>
+        <p>Rejoignez EnerAudit CI — c'est gratuit</p>
+        <div class="form-group">
+          <label>Nom du cabinet</label>
+          <input type="text" id="regCabinet" placeholder="Cabinet Energie Consulting">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="votre@email.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="regPwd" placeholder="Minimum 8 caractères">
+        </div>
+        <button class="btn-primary" onclick="doRegister()">Créer mon compte</button>
+        <div class="auth-switch">Déjà un compte ? <a onclick="showPage('auth','login')">Se connecter</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="page-app" class="page">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Ener<span>Audit</span> CI</div>
+    <div class="sidebar-section">Principal</div>
+    <button class="sidebar-item active" onclick="showSection('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </button>
+    <button class="sidebar-item" onclick="showSection('audits')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Mes audits
+    </button>
+    <div class="sidebar-section">Audit en cours</div>
+    <button class="sidebar-item" onclick="showSection('donnees')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Données site
+    </button>
+    <button class="sidebar-item" onclick="showSection('equipements')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8l-2 4h12z"/></svg>
+      Équipements
+    </button>
+    <button class="sidebar-item" onclick="showSection('analyse')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analyse IA
+    </button>
+    <button class="sidebar-item" onclick="showSection('ape')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Actions APE
+    </button>
+    <button class="sidebar-item" onclick="showSection('rapport')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Rapport DGE
+    </button>
+    <button class="sidebar-item" onclick="showSection('assistant')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Assistant IA
+    </button>
+    <div style="flex:1"></div>
+    <button class="sidebar-item" onclick="logout()" style="margin-top:auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="app-main">
+
+    <!-- DASHBOARD -->
+    <div id="section-dashboard" class="app-section active">
+      <div class="page-header">
+        <h2>Tableau de bord</h2>
+        <p>Vue d'ensemble de vos audits énergétiques</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Audits réalisés</div>
+          <div class="stat-value">3<span class="stat-unit">audits</span></div>
+          <div class="stat-change">↑ 1 ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Économies identifiées</div>
+          <div class="stat-value">127<span class="stat-unit">MWh/an</span></div>
+          <div class="stat-change">↑ Potentiel total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Réduction CO₂</div>
+          <div class="stat-value">43<span class="stat-unit">t CO₂/an</span></div>
+          <div class="stat-change">↓ Émissions évitées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Économies financières</div>
+          <div class="stat-value">18.4<span class="stat-unit">M FCFA</span></div>
+          <div class="stat-change">↑ Par an estimé</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Consommation mensuelle (kWh)</span></div>
+          <canvas id="chartConso" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Répartition énergétique</span></div>
+          <canvas id="chartRep" height="200"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Derniers audits</span>
+          <button class="btn-sm btn-success" onclick="showSection('audits')">+ Nouvel audit</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Entreprise</th><th>Secteur</th><th>Type</th><th>Statut</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><strong>SOTRA Abidjan</strong></td><td>Transport</td><td>Industrie</td><td><span class="badge badge-green">Terminé</span></td><td><button class="btn-sm btn-info" onclick="loadAudit('SOTRA Abidjan')">Ouvrir</button></td></tr>
+              <tr><td><strong>CIE Siège</strong></td><td>Énergie</td><td>Bâtiment</td><td><span class="badge badge-orange">En cours</span></td><td><button class="btn-sm btn-info" onclick="loadAudit('CIE Siège')">Ouvrir</button></td></tr>
+              <tr><td><strong>SIFCA Abengourou</strong></td><td>Agroalimentaire</td><td>Industrie</td><td><span class="badge badge-blue">Brouillon</span></td><td><button class="btn-sm btn-info" onclick="loadAudit('SIFCA Abengourou')">Ouvrir</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDITS -->
+    <div id="section-audits" class="app-section">
+      <div class="page-header">
+        <h2>Mes audits</h2>
+        <p>Créez et gérez vos missions d'audit énergétique</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Créer un nouvel audit</span></div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom de l'entreprise *</label>
+            <input type="text" id="a_nom" placeholder="Ex: SOTRA Abidjan">
+          </div>
+          <div class="form-group">
+            <label>Secteur d'activité *</label>
+            <select id="a_secteur">
+              <option value="">Sélectionner...</option>
+              <option>Agroalimentaire</option>
+              <option>Textile</option>
+              <option>Chimie / Plasturgie</option>
+              <option>Métallurgie</option>
+              <option>Transport / Logistique</option>
+              <option>Énergie / Utilities</option>
+              <option>Bâtiment tertiaire</option>
+              <option>Hôtellerie</option>
+              <option>Administration publique</option>
+              <option>Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Type de site *</label>
+            <select id="a_type">
+              <option value="industrie">Industrie</option>
+              <option value="batiment">Bâtiment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Localisation</label>
+            <input type="text" id="a_lieu" placeholder="Abidjan, Zone Industrielle">
+          </div>
+          <div class="form-group">
+            <label>Surface (m²) ou Capacité</label>
+            <input type="number" id="a_surface" placeholder="Ex: 5000">
+          </div>
+          <div class="form-group">
+            <label>Nombre d'employés</label>
+            <input type="number" id="a_employes" placeholder="Ex: 120">
+          </div>
+          <div class="form-group">
+            <label>Consommation annuelle (kWh)</label>
+            <input type="number" id="a_conso" placeholder="Ex: 2500000">
+          </div>
+          <div class="form-group">
+            <label>Facture énergétique annuelle (FCFA)</label>
+            <input type="number" id="a_facture" placeholder="Ex: 85000000">
+          </div>
+        </div>
+        <button class="btn-primary" style="width:auto; padding:12px 32px; margin-top:8px;" onclick="creerAudit()">Créer l'audit →</button>
+      </div>
+    </div>
+
+    <!-- DONNÉES -->
+    <div id="section-donnees" class="app-section">
+      <div class="page-header">
+        <h2>Données du site</h2>
+        <p>Consommations énergétiques mensuelles</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Consommations mensuelles</span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Mois</th><th>Électricité (kWh)</th><th>Carburant (L)</th><th>Eau (m³)</th><th>Coût (FCFA)</th></tr></thead>
+            <tbody id="tableConsommations">
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-sm btn-success" style="margin-top:16px;" onclick="calculerTotaux()">Calculer les totaux</button>
+      </div>
+      <div class="card" id="cardTotaux" style="display:none">
+        <div class="card-header"><span class="card-title">Bilan énergétique annuel</span></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Électricité totale</div><div class="stat-value" id="totalElec">—</div></div>
+          <div class="stat-card"><div class="stat-label">Coût annuel</div><div class="stat-value" id="totalCout">—</div></div>
+          <div class="stat-card"><div class="stat-label">Intensité énergétique</div><div class="stat-value" id="intensite">—</div></div>
+          <div class="stat-card"><div class="stat-label">Émissions CO₂</div><div class="stat-value" id="co2">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉQUIPEMENTS -->
+    <div id="section-equipements" class="app-section">
+      <div class="page-header">
+        <h2>Inventaire des équipements</h2>
+        <p>Listez les équipements énergivores du site</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Ajouter un équipement</span></div>
+        <div class="form-grid three">
+          <div class="form-group">
+            <label>Type d'équipement</label>
+            <select id="eq_type">
+              <option>Moteur électrique</option>
+              <option>Compresseur d'air</option>
+              <option>Chaudière</option>
+              <option>Climatisation / CVC</option>
+              <option>Groupe électrogène</option>
+              <option>Transformateur</option>
+              <option>Éclairage</option>
+              <option>Four industriel</option>
+              <option>Pompe</option>
+              <option>Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Désignation</label>
+            <input type="text" id="eq_nom" placeholder="Ex: Compresseur Atelier A">
+          </div>
+          <div class="form-group">
+            <label>Puissance (kW)</label>
+            <input type="number" id="eq_puissance" placeholder="Ex: 45">
+          </div>
+          <div class="form-group">
+            <label>Heures / jour</label>
+            <input type="number" id="eq_heures" placeholder="Ex: 16">
+          </div>
+          <div class="form-group">
+            <label>Rendement (%)</label>
+            <input type="number" id="eq_rendement" placeholder="Ex: 85">
+          </div>
+          <div class="form-group">
+            <label>Année d'installation</label>
+            <input type="number" id="eq_annee" placeholder="Ex: 2015">
+          </div>
+        </div>
+        <button class="btn-sm btn-success" onclick="ajouterEquipement()">+ Ajouter l'équipement</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Équipements inventoriés</span><span id="eq_count" class="badge badge-blue">0 équipement(s)</span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Type</th><th>Désignation</th><th>Puissance</th><th>Heures/j</th><th>Conso/an (kWh)</th><th>Action</th></tr></thead>
+            <tbody id="tableEquipements"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSE -->
+    <div id="section-analyse" class="app-section">
+      <div class="page-header">
+        <h2>Analyse énergétique IA</h2>
+        <p>L'IA analyse vos données et identifie les potentiels d'amélioration</p>
+      </div>
+      <div class="card" style="text-align:center; padding:40px;" id="analysePrompt">
+        <div style="font-size:48px; margin-bottom:16px;">🔍</div>
+        <h3 style="font-family:'Syne',sans-serif; font-size:20px; color:var(--bleu); margin-bottom:8px;">Prêt à analyser votre site</h3>
+        <p style="color:var(--texte-sec); margin-bottom:24px;">L'IA va analyser vos équipements et consommations pour identifier les usages énergétiques significatifs.</p>
+        <button class="btn-sm btn-success" style="padding:14px 32px; font-size:15px;" onclick="lancerAnalyse()">🚀 Lancer l'analyse IA</button>
+      </div>
+      <div id="analyseResultats" style="display:none">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Potentiel d'économie</div><div class="stat-value">23<span class="stat-unit">%</span></div><div class="stat-change">↓ Sur la consommation totale</div></div>
+          <div class="stat-card"><div class="stat-label">Économie financière</div><div class="stat-value">19.5<span class="stat-unit">M FCFA</span></div><div class="stat-change">↑ Par an</div></div>
+          <div class="stat-card"><div class="stat-label">Usages significatifs</div><div class="stat-value">4<span class="stat-unit">UES</span></div><div class="stat-change">Identifiés par l'IA</div></div>
+          <div class="stat-card"><div class="stat-label">Réduction CO₂</div><div class="stat-value">38<span class="stat-unit">t/an</span></div><div class="stat-change">↓ Émissions évitées</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Usages énergétiques significatifs (UES)</span></div>
+          <div id="uesContainer"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Répartition de la consommation</span></div>
+          <canvas id="chartAnalyse" height="150"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- APE -->
+    <div id="section-ape" class="app-section">
+      <div class="page-header">
+        <h2>Actions de Performance Énergétique</h2>
+        <p>Recommandations générées automatiquement par l'IA</p>
+      </div>
+      <div class="card" style="text-align:center; padding:40px;" id="apePrompt">
+        <div style="font-size:48px; margin-bottom:16px;">💡</div>
+        <h3 style="font-family:'Syne',sans-serif; font-size:20px; color:var(--bleu); margin-bottom:8px;">Générer les recommandations</h3>
+        <p style="color:var(--texte-sec); margin-bottom:24px;">L'IA va générer les APE adaptées à votre site avec les économies et le ROI pour chaque action.</p>
+        <button class="btn-sm btn-success" style="padding:14px 32px; font-size:15px;" onclick="genererAPE()">⚡ Générer les APE</button>
+      </div>
+      <div id="apeResultats" style="display:none">
+        <div class="ape-grid" id="apeGrid"></div>
+      </div>
+    </div>
+
+    <!-- RAPPORT -->
+    <div id="section-rapport" class="app-section">
+      <div class="page-header">
+        <h2>Rapport d'audit DGE</h2>
+        <p>Rapport conforme au modèle officiel de la Direction Générale de l'Énergie</p>
+      </div>
+      <div class="card" style="text-align:center; padding:40px;" id="rapportPrompt">
+        <div style="font-size:48px; margin-bottom:16px;">📄</div>
+        <h3 style="font-family:'Syne',sans-serif; font-size:20px; color:var(--bleu); margin-bottom:8px;">Générer le rapport DGE</h3>
+        <p style="color:var(--texte-sec); margin-bottom:24px;">L'IA va rédiger les 15 sections du rapport d'audit énergétique conforme au modèle DGE Côte d'Ivoire.</p>
+        <button class="btn-sm btn-success" style="padding:14px 32px; font-size:15px;" onclick="genererRapport()">📋 Générer le rapport complet</button>
+      </div>
+      <div id="rapportResultats" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Rapport d'audit énergétique — Conforme DGE</span>
+            <button class="btn-sm btn-success" onclick="telechargerRapport()">⬇ Télécharger .docx</button>
+          </div>
+          <div id="rapportSections"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSISTANT -->
+    <div id="section-assistant" class="app-section">
+      <div class="page-header">
+        <h2>Assistant IA Énergétique</h2>
+        <p>Votre expert virtuel en efficacité énergétique</p>
+      </div>
+      <div class="card">
+        <div class="chat-container" id="chatContainer">
+          <div class="msg msg-ai"><strong>Assistant EnerAudit :</strong> Bonjour ! Je suis votre assistant expert en audit énergétique. Je peux vous aider à analyser vos données, interpréter les résultats ou répondre à toute question technique sur l'efficacité énergétique. Comment puis-je vous aider ?</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Posez votre question énergétique..." onkeydown="if(event.key==='Enter') envoyerMessage()">
+          <button onclick="envoyerMessage()">Envoyer</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Questions fréquentes</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button class="btn-sm btn-outline" onclick="askQuestion('Quelle est la méthode de calcul du ROI pour une APE ?')">Calcul ROI</button>
+          <button class="btn-sm btn-outline" onclick="askQuestion('Comment identifier les usages énergétiques significatifs ?')">UES</button>
+          <button class="btn-sm btn-outline" onclick="askQuestion('Quelle est la norme ISO 50002 ?')">ISO 50002</button>
+          <button class="btn-sm btn-outline" onclick="askQuestion('Comment réduire la consommation des systèmes CVC ?')">CVC</button>
+          <button class="btn-sm btn-outline" onclick="askQuestion('Quelles sont les exigences de l\'arrêté DGE 2024 ?')">Arrêté DGE</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ===== STATE =====
+let currentAudit = {
+  nom: 'SOTRA Abidjan',
+  secteur: 'Transport',
+  type: 'industrie',
+  lieu: 'Abidjan, Zone Industrielle',
+  surface: 8500,
+  employes: 320,
+  conso_annuelle: 3200000,
+  facture_annuelle: 112000000
+};
+let equipements = [];
+let consommations = [
+  {mois:'Janvier', elec:245000, carburant:1200, eau:580, cout:8575000},
+  {mois:'Février', elec:238000, carburant:1100, eau:520, cout:8330000},
+  {mois:'Mars', elec:260000, carburant:1300, eau:600, cout:9100000},
+  {mois:'Avril', elec:272000, carburant:1250, eau:610, cout:9520000},
+  {mois:'Mai', elec:280000, carburant:1400, eau:650, cout:9800000},
+  {mois:'Juin', elec:295000, carburant:1500, eau:680, cout:10325000},
+  {mois:'Juillet', elec:288000, carburant:1450, eau:660, cout:10080000},
+  {mois:'Août', elec:276000, carburant:1350, eau:630, cout:9660000},
+  {mois:'Septembre', elec:265000, carburant:1280, eau:600, cout:9275000},
+  {mois:'Octobre', elec:258000, carburant:1220, eau:570, cout:9030000},
+  {mois:'Novembre', elec:248000, carburant:1150, eau:550, cout:8680000},
+  {mois:'Décembre', elec:255000, carburant:1180, eau:560, cout:8925000}
+];
+
+// ===== NAVIGATION =====
+function showPage(page, sub) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (page === 'app') {
+    document.getElementById('page-app').classList.add('active');
+    document.getElementById('navLinks').innerHTML = '<span style="color:rgba(255,255,255,0.6);font-size:14px;" id="navUser"></span>';
+  } else {
+    document.getElementById('page-' + page).classList.add('active');
+    if (sub) {
+      document.querySelectorAll('[id^=form-]').forEach(f => f.style.display='none');
+      document.getElementById('form-' + sub).style.display = 'block';
+    }
+  }
+}
+
+function showSection(s) {
+  document.querySelectorAll('.app-section').forEach(x => x.classList.remove('active'));
+  document.getElementById('section-' + s).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(x => x.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+// ===== AUTH =====
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  if (!email) { showToast('Veuillez entrer votre email'); return; }
+  showLoading('Connexion en cours...');
+  setTimeout(() => {
+    hideLoading();
+    showPage('app');
+    document.getElementById('navUser').textContent = email;
+    initDashboard();
+    showToast('Bienvenue sur EnerAudit CI !');
+  }, 1200);
+}
+
+function doRegister() {
+  const cabinet = document.getElementById('regCabinet').value;
+  const email = document.getElementById('regEmail').value;
+  if (!cabinet || !email) { showToast('Veuillez remplir tous les champs'); return; }
+  showLoading('Création du compte...');
+  setTimeout(() => {
+    hideLoading();
+    showPage('app');
+    document.getElementById('navUser').textContent = email;
+    initDashboard();
+    showToast('Compte créé ! Bienvenue ' + cabinet);
+  }, 1500);
+}
+
+function demoLogin() {
+  showLoading('Chargement de la démo...');
+  setTimeout(() => {
+    hideLoading();
+    showPage('app');
+    document.getElementById('navUser').textContent = 'demo@eneraudit.ci';
+    initDashboard();
+    initConsommations();
+    initEquipementsDemo();
+    showToast('Mode démonstration activé');
+  }, 1000);
+}
+
+function logout() {
+  showPage('landing');
+  document.getElementById('navLinks').innerHTML = `
+    <button class="nav-btn nav-btn-ghost" onclick="showPage('auth','login')">Connexion</button>
+    <button class="nav-btn nav-btn-primary" onclick="showPage('auth','register')">Commencer</button>`;
+}
+
+// ===== AUDIT =====
+function creerAudit() {
+  const nom = document.getElementById('a_nom').value;
+  const secteur = document.getElementById('a_secteur').value;
+  if (!nom || !secteur) { showToast('Veuillez remplir les champs obligatoires'); return; }
+  currentAudit = {
+    nom, secteur,
+    type: document.getElementById('a_type').value,
+    lieu: document.getElementById('a_lieu').value,
+    surface: parseInt(document.getElementById('a_surface').value) || 0,
+    employes: parseInt(document.getElementById('a_employes').value) || 0,
+    conso_annuelle: parseInt(document.getElementById('a_conso').value) || 0,
+    facture_annuelle: parseInt(document.getElementById('a_facture').value) || 0
+  };
+  showToast('Audit créé : ' + nom + ' ✓');
+  initConsommations();
+  // Simulate clicking on section donnees
+  document.querySelectorAll('.app-section').forEach(x => x.classList.remove('active'));
+  document.getElementById('section-donnees').classList.add('active');
+}
+
+function loadAudit(nom) {
+  currentAudit.nom = nom;
+  initConsommations();
+  showSection_direct('donnees');
+  showToast('Audit chargé : ' + nom);
+}
+
+function showSection_direct(s) {
+  document.querySelectorAll('.app-section').forEach(x => x.classList.remove('active'));
+  document.getElementById('section-' + s).classList.add('active');
+}
+
+// ===== DASHBOARD =====
+function initDashboard() {
+  // Chart consommation
+  const ctx1 = document.getElementById('chartConso').getContext('2d');
+  new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'],
+      datasets: [{
+        label: 'kWh',
+        data: consommations.map(c => c.elec),
+        backgroundColor: 'rgba(0,200,150,0.7)',
+        borderColor: '#00C896',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+  // Chart répartition
+  const ctx2 = document.getElementById('chartRep').getContext('2d');
+  new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: ['Moteurs', 'Compresseurs', 'CVC', 'Éclairage', 'Autres'],
+      datasets: [{ data: [38, 25, 18, 12, 7], backgroundColor: ['#00C896','#0B2E4E','#F5A623','#1A4A72','#94A3B8'] }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+// ===== CONSOMMATIONS =====
+function initConsommations() {
+  const tbody = document.getElementById('tableConsommations');
+  tbody.innerHTML = consommations.map(c => `
+    <tr>
+      <td>${c.mois}</td>
+      <td><input type="number" value="${c.elec}" style="width:120px; padding:6px 8px; border:1px solid var(--gris-bord); border-radius:6px; font-size:13px;" onchange="c_${consommations.indexOf(c)}_elec=this.value"></td>
+      <td><input type="number" value="${c.carburant}" style="width:100px; padding:6px 8px; border:1px solid var(--gris-bord); border-radius:6px; font-size:13px;"></td>
+      <td><input type="number" value="${c.eau}" style="width:100px; padding:6px 8px; border:1px solid var(--gris-bord); border-radius:6px; font-size:13px;"></td>
+      <td>${(c.cout/1000000).toFixed(1)} M</td>
+    </tr>`).join('');
+}
+
+function calculerTotaux() {
+  const totalElec = consommations.reduce((s,c) => s + c.elec, 0);
+  const totalCout = consommations.reduce((s,c) => s + c.cout, 0);
+  const surface = currentAudit.surface || 8500;
+  const intensite = (totalElec / surface).toFixed(1);
+  const co2 = (totalElec * 0.0003).toFixed(1);
+  document.getElementById('totalElec').innerHTML = (totalElec/1000).toFixed(0) + '<span class="stat-unit">MWh</span>';
+  document.getElementById('totalCout').innerHTML = (totalCout/1000000).toFixed(1) + '<span class="stat-unit">M FCFA</span>';
+  document.getElementById('intensite').innerHTML = intensite + '<span class="stat-unit">kWh/m²</span>';
+  document.getElementById('co2').innerHTML = co2 + '<span class="stat-unit">t CO₂</span>';
+  document.getElementById('cardTotaux').style.display = 'block';
+  showToast('Bilan calculé avec succès');
+}
+
+// ===== ÉQUIPEMENTS =====
+function ajouterEquipement() {
+  const type = document.getElementById('eq_type').value;
+  const nom = document.getElementById('eq_nom').value || type;
+  const puissance = parseFloat(document.getElementById('eq_puissance').value) || 0;
+  const heures = parseFloat(document.getElementById('eq_heures').value) || 0;
+  const rendement = parseFloat(document.getElementById('eq_rendement').value) || 85;
+  const annee = document.getElementById('eq_annee').value || '—';
+  const consoAn = Math.round(puissance * heures * 365 / 1000 * (1 + (100-rendement)/100));
+  equipements.push({ type, nom, puissance, heures, rendement, annee, consoAn });
+  renderEquipements();
+  document.getElementById('eq_nom').value = '';
+  document.getElementById('eq_puissance').value = '';
+  document.getElementById('eq_heures').value = '';
+  showToast('Équipement ajouté : ' + nom);
+}
+
+function renderEquipements() {
+  const tbody = document.getElementById('tableEquipements');
+  tbody.innerHTML = equipements.map((e,i) => `
+    <tr>
+      <td><span class="badge badge-blue">${e.type}</span></td>
+      <td>${e.nom}</td>
+      <td>${e.puissance} kW</td>
+      <td>${e.heures} h</td>
+      <td><strong>${e.consoAn.toLocaleString()} kWh</strong></td>
+      <td><button class="btn-sm btn-danger" onclick="supprimerEq(${i})">Suppr.</button></td>
+    </tr>`).join('');
+  document.getElementById('eq_count').textContent = equipements.length + ' équipement(s)';
+}
+
+function supprimerEq(i) {
+  equipements.splice(i, 1);
+  renderEquipements();
+}
+
+function initEquipementsDemo() {
+  equipements = [
+    { type:'Compresseur d\'air', nom:'Compresseur Atelier A', puissance:55, heures:18, rendement:78, annee:'2012', consoAn:361350 },
+    { type:'Moteur électrique', nom:'Moteurs ventilation', puissance:30, heures:20, rendement:82, annee:'2016', consoAn:197100 },
+    { type:'Climatisation / CVC', nom:'CVC Bureau admin.', puissance:45, heures:10, rendement:75, annee:'2018', consoAn:164250 },
+    { type:'Éclairage', nom:'Éclairage Atelier', puissance:20, heures:16, rendement:60, annee:'2010', consoAn:117200 }
+  ];
+  renderEquipements();
+}
+
+// ===== ANALYSE =====
+function lancerAnalyse() {
+  showLoading('Analyse IA en cours...');
+  setTimeout(() => {
+    hideLoading();
+    document.getElementById('analysePrompt').style.display = 'none';
+    document.getElementById('analyseResultats').style.display = 'block';
+    const ues = [
+      { nom:'Compresseurs d\'air', poids:38, potentiel:22, action:'Installation variateurs de vitesse + maintenance préventive' },
+      { nom:'Moteurs électriques', poids:25, potentiel:18, action:'Remplacement moteurs IE1 par IE3 + variateurs' },
+      { nom:'Systèmes CVC', poids:18, potentiel:25, action:'Régulation température + maintenance filtres' },
+      { nom:'Éclairage industriel', poids:12, potentiel:45, action:'Remplacement par LED haute efficacité + détecteurs' }
+    ];
+    document.getElementById('uesContainer').innerHTML = ues.map(u => `
+      <div style="padding:16px 0; border-bottom:1px solid var(--gris);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <strong style="font-size:14px;">${u.nom}</strong>
+          <span class="badge badge-orange">${u.poids}% de la conso.</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${u.poids}%"></div></div>
+        <p style="font-size:13px; color:var(--texte-sec); margin-top:6px;">Potentiel d'économie : <strong style="color:var(--vert-fonce)">${u.potentiel}%</strong> — ${u.action}</p>
+      </div>`).join('');
+    // Chart
+    const ctx = document.getElementById('chartAnalyse').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ues.map(u => u.nom),
+        datasets: [
+          { label: 'Part consommation (%)', data: ues.map(u => u.poids), backgroundColor: 'rgba(11,46,78,0.7)', borderRadius:4 },
+          { label: 'Potentiel économie (%)', data: ues.map(u => u.potentiel), backgroundColor: 'rgba(0,200,150,0.7)', borderRadius:4 }
+        ]
+      },
+      options: { plugins: { legend: { position: 'top' } } }
+    });
+    showToast('Analyse terminée — 4 usages significatifs identifiés');
+  }, 2500);
+}
+
+// ===== APE =====
+function genererAPE() {
+  showLoading('Génération des APE...');
+  const apes = [
+    { titre:'Installation de variateurs de vitesse sur compresseurs', economie:'48 000 kWh/an', gain:'1 680 000 FCFA', invest:'4 200 000 FCFA', roi:'2.5 ans', co2:'14.4 t CO₂/an', priorite:'Haute' },
+    { titre:'Remplacement des moteurs IE1 par IE3', economie:'35 000 kWh/an', gain:'1 225 000 FCFA', invest:'6 500 000 FCFA', roi:'5.3 ans', co2:'10.5 t CO₂/an', priorite:'Moyenne' },
+    { titre:'Optimisation et régulation du système CVC', economie:'29 000 kWh/an', gain:'1 015 000 FCFA', invest:'2 800 000 FCFA', roi:'2.8 ans', co2:'8.7 t CO₂/an', priorite:'Haute' },
+    { titre:'Remplacement éclairage par LED industrielle', economie:'52 000 kWh/an', gain:'1 820 000 FCFA', invest:'3 500 000 FCFA', roi:'1.9 ans', co2:'15.6 t CO₂/an', priorite:'Haute' },
+    { titre:'Amélioration du facteur de puissance', economie:'18 000 kWh/an', gain:'630 000 FCFA', invest:'1 900 000 FCFA', roi:'3.0 ans', co2:'5.4 t CO₂/an', priorite:'Moyenne' },
+    { titre:'Intégration panneau solaire toiture', economie:'95 000 kWh/an', gain:'3 325 000 FCFA', invest:'28 000 000 FCFA', roi:'8.4 ans', co2:'28.5 t CO₂/an', priorite:'Long terme' }
+  ];
+  setTimeout(() => {
+    hideLoading();
+    document.getElementById('apePrompt').style.display = 'none';
+    document.getElementById('apeResultats').style.display = 'block';
+    document.getElementById('apeGrid').innerHTML = apes.map(a => `
+      <div class="ape-card">
+        <h4>${a.titre}</h4>
+        <span class="badge ${a.priorite==='Haute'?'badge-green':a.priorite==='Moyenne'?'badge-orange':'badge-blue'}">${a.priorite} priorité</span>
+        <div class="ape-meta">
+          <div class="ape-meta-item"><div class="ape-meta-label">Économie</div><div class="ape-meta-value">${a.economie}</div></div>
+          <div class="ape-meta-item"><div class="ape-meta-label">Gain financier</div><div class="ape-meta-value">${a.gain}</div></div>
+          <div class="ape-meta-item"><div class="ape-meta-label">Investissement</div><div class="ape-meta-value">${a.invest}</div></div>
+          <div class="ape-meta-item"><div class="ape-meta-label">Retour / ROI</div><div class="ape-meta-value">${a.roi}</div></div>
+        </div>
+        <p style="font-size:12px; color:var(--texte-sec); margin-top:10px;">Réduction CO₂ : <strong>${a.co2}</strong></p>
+      </div>`).join('');
+    showToast('6 APE générées avec succès');
+  }, 2000);
+}
+
+// ===== RAPPORT =====
+function genererRapport() {
+  showLoading('Rédaction du rapport DGE en cours...');
+  const nom = currentAudit.nom || 'Entreprise auditée';
+  const sections = [
+    { num:'I', titre:'Page de garde', contenu:`Rapport d'Audit Énergétique — ${nom} — ${new Date().getFullYear()}. Réalisé conformément au modèle officiel de la Direction Générale de l'Énergie (DGE) de Côte d'Ivoire. Normes : EN 16247-2, EN 16247-3 et ISO 50002.` },
+    { num:'II', titre:'Liste des sigles et abréviations', contenu:'APE : Action de Performance Énergétique. DGE : Direction Générale de l\'Énergie. UES : Usage Énergétique Significatif. ROI : Retour sur Investissement. CVC : Chauffage, Ventilation, Climatisation. kWh : kilowattheure. FCFA : Franc CFA.' },
+    { num:'III', titre:'Contexte', contenu:`L'entreprise ${nom}, située à ${currentAudit.lieu || 'Abidjan'}, opère dans le secteur ${currentAudit.secteur}. Avec une consommation énergétique annuelle de ${(currentAudit.conso_annuelle/1000).toFixed(0)} MWh, elle est assujettie à la réalisation d'un audit énergétique conformément à l'Arrêté interministériel N°156/MMPE/MCLU/MT/MINEDDTE/MCI du 23 Avril 2024.` },
+    { num:'IV', titre:'Présentation de l\'entreprise', contenu:`${nom} emploie ${currentAudit.employes} personnes sur un site de ${currentAudit.surface} m². La facture énergétique annuelle s'élève à ${(currentAudit.facture_annuelle/1000000).toFixed(0)} millions de FCFA, représentant un enjeu financier majeur justifiant la réalisation de cet audit.` },
+    { num:'V', titre:'Description des installations', contenu:'Le site dispose de compresseurs d\'air (55 kW), moteurs électriques (30 kW), systèmes CVC (45 kW) et éclairage industriel (20 kW). L\'alimentation électrique est assurée par le réseau CIE en MT/BT via un transformateur 630 kVA.' },
+    { num:'VI', titre:'Bilan énergétique', contenu:`Consommation électrique annuelle totale : ${(consommations.reduce((s,c)=>s+c.elec,0)/1000).toFixed(0)} MWh. Intensité énergétique : ${(consommations.reduce((s,c)=>s+c.elec,0)/(currentAudit.surface||8500)).toFixed(0)} kWh/m². Émissions CO₂ associées : ${(consommations.reduce((s,c)=>s+c.elec,0)*0.0003).toFixed(0)} tonnes/an.` },
+    { num:'VII', titre:'Analyse des usages énergétiques significatifs', contenu:'4 UES ont été identifiés : Compresseurs d\'air (38% de la consommation), Moteurs électriques (25%), Systèmes CVC (18%), Éclairage industriel (12%). Ces 4 usages représentent 93% de la consommation totale du site.' },
+    { num:'VIII', titre:'Analyse technique des équipements', contenu:'Les compresseurs présentent un taux de charge moyen de 65% avec des fuites estimées à 18% du débit. Les moteurs IE1 présentent un rendement moyen de 82% contre 95% pour les moteurs IE3 actuels. Le système CVC fonctionne sans régulation horaire optimisée.' },
+    { num:'IX', titre:'Actions d\'amélioration énergétique (APE)', contenu:'6 actions recommandées : (1) Variateurs de vitesse compresseurs — 48 MWh/an. (2) Moteurs IE3 — 35 MWh/an. (3) Régulation CVC — 29 MWh/an. (4) LED industrielle — 52 MWh/an. (5) Facteur de puissance — 18 MWh/an. (6) Solaire toiture — 95 MWh/an.' },
+    { num:'X', titre:'Analyse technico-économique', contenu:'Investissement total recommandé : 46 900 000 FCFA. Économies financières annuelles : 9 675 000 FCFA. ROI moyen pondéré : 4.8 ans. Valeur Actualisée Nette (VAN sur 10 ans) : +52 000 000 FCFA.' },
+    { num:'XI', titre:'Plan d\'action énergétique', contenu:'Court terme (0-12 mois) : APE Éclairage LED + Régulation CVC. Moyen terme (1-3 ans) : Variateurs vitesse + Amélioration facteur puissance. Long terme (3-7 ans) : Moteurs IE3 + Solaire photovoltaïque.' },
+    { num:'XII', titre:'Estimation des économies d\'énergie', contenu:'Économies totales : 277 000 kWh/an soit 23% de la consommation actuelle. Cela représente une réduction de la facture énergétique de 9 675 000 FCFA/an, soit 9% de la facture totale actuelle.' },
+    { num:'XIII', titre:'Réduction des émissions de CO₂', contenu:'Les APE permettront une réduction des émissions de GES de 83 tonnes de CO₂ équivalent par an, contribuant aux objectifs nationaux de la Côte d\'Ivoire en matière de transition énergétique.' },
+    { num:'XIV', titre:'Conclusion', contenu:`L'audit énergétique de ${nom} révèle un potentiel d'économie significatif de 23%. La mise en œuvre des 6 APE identifiées permettra de réduire la facture énergétique de 9,7 millions FCFA/an avec un retour sur investissement moyen de 4.8 ans.` },
+    { num:'XV', titre:'Annexes techniques', contenu:'Annexe A : Fiches techniques équipements. Annexe B : Courbes de charge mesurées. Annexe C : Calculs détaillés ROI par APE. Annexe D : Références normatives (EN 16247, ISO 50002). Annexe E : Arrêté DGE N°156 du 23 Avril 2024.' }
+  ];
+  setTimeout(() => {
+    hideLoading();
+    document.getElementById('rapportPrompt').style.display = 'none';
+    document.getElementById('rapportResultats').style.display = 'block';
+    document.getElementById('rapportSections').innerHTML = sections.map(s => `
+      <div class="rapport-section">
+        <h4>Section ${s.num} — ${s.titre}</h4>
+        <p>${s.contenu}</p>
+      </div>`).join('');
+    showToast('Rapport DGE généré — 15 sections rédigées');
+  }, 3000);
+}
+
+function telechargerRapport() {
+  showToast('Préparation du fichier Word... (fonctionnalité complète avec backend)');
+  // En production: appel API Python pour générer le .docx avec python-docx
+}
+
+// ===== ASSISTANT IA =====
+const reponsesIA = {
+  'roi': 'Le ROI (Return on Investment) d\'une APE se calcule ainsi : ROI = Investissement / Économies annuelles. Par exemple, pour un investissement de 4 200 000 FCFA générant 1 680 000 FCFA d\'économies/an, le ROI = 2,5 ans. Un ROI inférieur à 5 ans est généralement considéré comme acceptable.',
+  'ues': 'Les Usages Énergétiques Significatifs (UES) sont identifiés selon la norme ISO 50002 : ce sont les postes qui représentent une part importante de la consommation (généralement >10%) ou qui présentent un fort potentiel d\'amélioration. Méthode : analyse des factures + mesures + audit terrain.',
+  'iso 50002': 'La norme ISO 50002 définit la méthodologie des audits énergétiques. Elle exige : (1) Contact préliminaire, (2) Réunion de démarrage, (3) Collecte de données, (4) Travail sur place avec mesures, (5) Analyse, (6) Rapport final, (7) Réunion de clôture.',
+  'cvc': 'Pour réduire la consommation CVC : installer une régulation par programmation horaire (-15%), nettoyer les filtres mensuellement (-5%), optimiser les consignes de température (26°C en refroidissement), installer des variateurs sur les ventilateurs (-20%), et effectuer la maintenance préventive des compresseurs.',
+  'arrêté dge': 'L\'Arrêté interministériel N°156/MMPE/MCLU/MT/MINEDDTE/MCI du 23 Avril 2024 définit les conditions d\'assujettissement à l\'audit énergétique obligatoire en Côte d\'Ivoire. Il concerne les organismes consommateurs d\'énergie dépassant certains seuils. L\'audit est périodique et doit être réalisé par un auditeur certifié.'
+};
+
+function envoyerMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const chat = document.getElementById('chatContainer');
+  chat.innerHTML += `<div class="msg msg-user">${msg}</div>`;
+  input.value = '';
+  chat.scrollTop = chat.scrollHeight;
+  setTimeout(() => {
+    const lower = msg.toLowerCase();
+    let reponse = 'Je suis votre assistant expert en audit énergétique conforme DGE. Je peux vous aider sur : les calculs d\'intensité énergétique, les UES, la méthodologie ISO 50002, les APE, le ROI des actions, ou les exigences réglementaires de la DGE Côte d\'Ivoire. Pouvez-vous préciser votre question ?';
+    for (const [key, val] of Object.entries(reponsesIA)) {
+      if (lower.includes(key)) { reponse = val; break; }
+    }
+    chat.innerHTML += `<div class="msg msg-ai"><strong>Assistant EnerAudit :</strong> ${reponse}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+  }, 800);
+}
+
+function askQuestion(q) {
+  document.getElementById('chatInput').value = q;
+  envoyerMessage();
+  showSection_direct('assistant');
+}
+
+// ===== UTILS =====
+function showLoading(txt) {
+  document.getElementById('loadingText').textContent = txt || 'Chargement...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
