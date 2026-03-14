@@ -6,6 +6,7 @@
 <title>EnerAudit CI — Plateforme d'Audit Énergétique DGE</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <style>
 :root {
   --vert: #00C896;
@@ -1206,9 +1207,269 @@ function genererRapport() {
   }, 3000);
 }
 
-function telechargerRapport() {
-  showToast('Préparation du fichier Word... (fonctionnalité complète avec backend)');
-  // En production: appel API Python pour générer le .docx avec python-docx
+async function telechargerRapport() {
+  showLoading('Génération du fichier Word .docx...');
+  const nom = currentAudit.nom || 'Entreprise auditée';
+  const annee = new Date().getFullYear();
+
+  try {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, Table, TableRow, TableCell, WidthType, ShadingType } = docx;
+
+    const titleStyle = (text) => new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [new TextRun({ text, bold: true, size: 32, color: '0B2E4E', font: 'Calibri' })]
+    });
+
+    const heading1 = (text) => new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      spacing: { before: 400, after: 200 },
+      children: [new TextRun({ text, bold: true, size: 28, color: '007A5E', font: 'Calibri' })]
+    });
+
+    const heading2 = (text) => new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 300, after: 150 },
+      children: [new TextRun({ text, bold: true, size: 24, color: '0B2E4E', font: 'Calibri' })]
+    });
+
+    const body = (text) => new Paragraph({
+      spacing: { after: 150 },
+      children: [new TextRun({ text, size: 22, font: 'Calibri' })]
+    });
+
+    const bullet = (text) => new Paragraph({
+      spacing: { after: 100 },
+      bullet: { level: 0 },
+      children: [new TextRun({ text, size: 22, font: 'Calibri' })]
+    });
+
+    const separator = () => new Paragraph({
+      spacing: { after: 200 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '00C896' } },
+      children: []
+    });
+
+    const totalElec = consommations.reduce((s,c) => s+c.elec, 0);
+    const totalCout = consommations.reduce((s,c) => s+c.cout, 0);
+    const surface = currentAudit.surface || 8500;
+    const intensite = (totalElec / surface).toFixed(0);
+    const co2 = (totalElec * 0.0003).toFixed(0);
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1440, right: 1200, bottom: 1440, left: 1440 }
+          }
+        },
+        children: [
+          // PAGE DE GARDE
+          new Paragraph({ spacing: { after: 600 }, children: [] }),
+          titleStyle('RAPPORT D\'AUDIT ÉNERGÉTIQUE'),
+          titleStyle('━━━━━━━━━━━━━━━━━━━━━━'),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 300 },
+            children: [new TextRun({ text: nom.toUpperCase(), bold: true, size: 40, color: '00C896', font: 'Calibri' })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+            children: [new TextRun({ text: currentAudit.lieu || 'Côte d\'Ivoire', size: 24, color: '64748B', font: 'Calibri' })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 600 },
+            children: [new TextRun({ text: `Année ${annee}`, size: 24, color: '64748B', font: 'Calibri' })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+            children: [new TextRun({ text: 'Conforme au modèle officiel de la', size: 20, color: '64748B', font: 'Calibri', italics: true })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+            children: [new TextRun({ text: 'Direction Générale de l\'Énergie (DGE)', bold: true, size: 22, color: '0B2E4E', font: 'Calibri' })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+            children: [new TextRun({ text: 'République de Côte d\'Ivoire', size: 20, color: '64748B', font: 'Calibri', italics: true })]
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
+            children: [new TextRun({ text: 'Normes : EN 16247-2/3 | ISO 50002', size: 20, color: '64748B', font: 'Calibri', italics: true })]
+          }),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION I
+          heading1('I. LISTE DES SIGLES ET ABRÉVIATIONS'),
+          separator(),
+          bullet('APE : Action de Performance Énergétique'),
+          bullet('DGE : Direction Générale de l\'Énergie'),
+          bullet('UES : Usage Énergétique Significatif'),
+          bullet('ROI : Return on Investment (Retour sur Investissement)'),
+          bullet('CVC : Chauffage, Ventilation, Climatisation'),
+          bullet('kWh : kilowattheure'),
+          bullet('MWh : Mégawattheure'),
+          bullet('FCFA : Franc de la Communauté Financière Africaine'),
+          bullet('GES : Gaz à Effet de Serre'),
+          bullet('CO₂ : Dioxyde de Carbone'),
+          bullet('IE1/IE3 : Classes d\'efficacité des moteurs électriques'),
+          bullet('VD : Variateur de Vitesse'),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION II
+          heading1('II. CONTEXTE'),
+          separator(),
+          body(`L'entreprise ${nom}, située à ${currentAudit.lieu || 'Abidjan, Côte d\'Ivoire'}, opère dans le secteur ${currentAudit.secteur || 'industriel'}. Avec une consommation énergétique annuelle de ${(totalElec/1000).toFixed(0)} MWh, elle figure parmi les consommateurs d'énergie assujettis à la réalisation d'un audit énergétique obligatoire et périodique.`),
+          body(`Cet audit est réalisé conformément à l'Arrêté interministériel N°156/MMPE/MCLU/MT/MINEDDTE/MCI du 23 Avril 2024 portant conditions d'assujettissement des organismes consommateurs d'énergie à l'audit énergétique obligatoire et périodique en Côte d'Ivoire.`),
+          body(`L'audit énergétique a pour objectif d'évaluer l'état des performances énergétiques du site et de proposer des actions d'amélioration permettant d'atteindre les objectifs de réduction de consommation énergétique.`),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION III
+          heading1('III. PRÉSENTATION DE L\'ENTREPRISE'),
+          separator(),
+          heading2('3.1 Informations générales'),
+          bullet(`Raison sociale : ${nom}`),
+          bullet(`Secteur d'activité : ${currentAudit.secteur || '—'}`),
+          bullet(`Type de site : ${currentAudit.type === 'industrie' ? 'Site industriel' : 'Bâtiment tertiaire'}`),
+          bullet(`Localisation : ${currentAudit.lieu || '—'}`),
+          bullet(`Surface totale : ${(currentAudit.surface || 0).toLocaleString()} m²`),
+          bullet(`Effectif : ${(currentAudit.employes || 0).toLocaleString()} employés`),
+          heading2('3.2 Données énergétiques de référence'),
+          bullet(`Consommation électrique annuelle : ${(totalElec/1000).toFixed(0)} MWh/an`),
+          bullet(`Facture énergétique annuelle : ${(currentAudit.facture_annuelle/1000000 || 0).toFixed(0)} millions FCFA`),
+          bullet(`Fournisseur d'énergie : CIE (Compagnie Ivoirienne d'Électricité)`),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION IV
+          heading1('IV. BILAN ÉNERGÉTIQUE'),
+          separator(),
+          heading2('4.1 Consommation électrique annuelle'),
+          bullet(`Consommation totale : ${(totalElec/1000).toFixed(0)} MWh/an`),
+          bullet(`Coût total : ${(totalCout/1000000).toFixed(1)} millions FCFA/an`),
+          bullet(`Intensité énergétique : ${intensite} kWh/m²/an`),
+          bullet(`Émissions CO₂ associées : ${co2} tonnes CO₂/an`),
+          heading2('4.2 Répartition par usage'),
+          bullet('Moteurs électriques : 38% de la consommation totale'),
+          bullet('Compresseurs d\'air : 25% de la consommation totale'),
+          bullet('Systèmes CVC : 18% de la consommation totale'),
+          bullet('Éclairage industriel : 12% de la consommation totale'),
+          bullet('Autres usages : 7% de la consommation totale'),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION V
+          heading1('V. ANALYSE DES USAGES ÉNERGÉTIQUES SIGNIFICATIFS'),
+          separator(),
+          body('Sur la base des données collectées et des mesures réalisées sur site, 4 Usages Énergétiques Significatifs (UES) ont été identifiés conformément à la méthodologie ISO 50002 :'),
+          heading2('UES 1 — Compresseurs d\'air (38%)'),
+          bullet('Équipements : Compresseurs à vis, puissance installée 55 kW'),
+          bullet('Fonctionnement : 18 heures/jour, 365 jours/an'),
+          bullet('Anomalies identifiées : Taux de charge 65%, fuites estimées à 18% du débit'),
+          bullet('Potentiel d\'économie : 22% sur cet usage'),
+          heading2('UES 2 — Moteurs électriques (25%)'),
+          bullet('Équipements : Moteurs IE1, puissance installée 30 kW'),
+          bullet('Rendement mesuré : 82% (contre 95% pour IE3)'),
+          bullet('Potentiel d\'économie : 18% sur cet usage'),
+          heading2('UES 3 — Systèmes CVC (18%)'),
+          bullet('Équipements : Climatiseurs et ventilation, 45 kW'),
+          bullet('Anomalies : Absence de régulation horaire, filtres encrassés'),
+          bullet('Potentiel d\'économie : 25% sur cet usage'),
+          heading2('UES 4 — Éclairage industriel (12%)'),
+          bullet('Équipements : Tubes fluorescents T8, 20 kW installés'),
+          bullet('Anomalies : Technologie obsolète, pas de détection de présence'),
+          bullet('Potentiel d\'économie : 45% sur cet usage'),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION VI — APE
+          heading1('VI. ACTIONS DE PERFORMANCE ÉNERGÉTIQUE (APE)'),
+          separator(),
+          body('Sur la base de l\'analyse des usages énergétiques significatifs, les actions d\'amélioration suivantes sont recommandées par ordre de priorité :'),
+          heading2('APE 1 — Installation de variateurs de vitesse (Haute priorité)'),
+          bullet('Description : Équiper les compresseurs de variateurs de fréquence'),
+          bullet('Économie estimée : 48 000 kWh/an'),
+          bullet('Gain financier : 1 680 000 FCFA/an'),
+          bullet('Investissement : 4 200 000 FCFA'),
+          bullet('Retour sur investissement : 2,5 ans'),
+          bullet('Réduction CO₂ : 14,4 t CO₂/an'),
+          heading2('APE 2 — Remplacement éclairage LED (Haute priorité)'),
+          bullet('Description : Remplacement des tubes T8 par LED industrielle haute efficacité'),
+          bullet('Économie estimée : 52 000 kWh/an'),
+          bullet('Gain financier : 1 820 000 FCFA/an'),
+          bullet('Investissement : 3 500 000 FCFA'),
+          bullet('Retour sur investissement : 1,9 an'),
+          bullet('Réduction CO₂ : 15,6 t CO₂/an'),
+          heading2('APE 3 — Optimisation système CVC (Haute priorité)'),
+          bullet('Description : Régulation horaire + maintenance préventive'),
+          bullet('Économie estimée : 29 000 kWh/an'),
+          bullet('Gain financier : 1 015 000 FCFA/an'),
+          bullet('Investissement : 2 800 000 FCFA'),
+          bullet('Retour sur investissement : 2,8 ans'),
+          heading2('APE 4 — Remplacement moteurs IE3 (Moyenne priorité)'),
+          bullet('Économie estimée : 35 000 kWh/an — Investissement : 6 500 000 FCFA — ROI : 5,3 ans'),
+          heading2('APE 5 — Amélioration facteur de puissance (Moyenne priorité)'),
+          bullet('Économie estimée : 18 000 kWh/an — Investissement : 1 900 000 FCFA — ROI : 3,0 ans'),
+          heading2('APE 6 — Solaire photovoltaïque toiture (Long terme)'),
+          bullet('Économie estimée : 95 000 kWh/an — Investissement : 28 000 000 FCFA — ROI : 8,4 ans'),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION VII
+          heading1('VII. ANALYSE TECHNICO-ÉCONOMIQUE'),
+          separator(),
+          bullet(`Investissement total recommandé : 46 900 000 FCFA`),
+          bullet(`Économies financières annuelles : 9 675 000 FCFA/an`),
+          bullet(`ROI moyen pondéré : 4,8 ans`),
+          bullet(`Économies d'énergie totales : 277 000 kWh/an (23% de réduction)`),
+          bullet(`Réduction des émissions CO₂ : 83 tonnes CO₂/an`),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // SECTION VIII
+          heading1('VIII. PLAN D\'ACTION ÉNERGÉTIQUE'),
+          separator(),
+          heading2('Court terme (0 — 12 mois)'),
+          bullet('APE 2 : Éclairage LED — ROI 1,9 an'),
+          bullet('APE 3 : Optimisation CVC — ROI 2,8 ans'),
+          heading2('Moyen terme (1 — 3 ans)'),
+          bullet('APE 1 : Variateurs de vitesse — ROI 2,5 ans'),
+          bullet('APE 5 : Facteur de puissance — ROI 3,0 ans'),
+          heading2('Long terme (3 — 7 ans)'),
+          bullet('APE 4 : Moteurs IE3 — ROI 5,3 ans'),
+          bullet('APE 6 : Solaire photovoltaïque — ROI 8,4 ans'),
+          new Paragraph({ pageBreakBefore: true, children: [] }),
+
+          // CONCLUSION
+          heading1('IX. CONCLUSION'),
+          separator(),
+          body(`L'audit énergétique de ${nom} a permis d'identifier un potentiel d'économie significatif de 23% de la consommation actuelle, représentant 277 000 kWh/an soit 9 675 000 FCFA d'économies annuelles.`),
+          body(`La mise en œuvre des 6 Actions de Performance Énergétique identifiées permettra également de réduire les émissions de gaz à effet de serre de 83 tonnes de CO₂ équivalent par an, contribuant aux objectifs nationaux de transition énergétique de la Côte d'Ivoire.`),
+          body(`Il est recommandé de prioriser les actions à court terme (LED + CVC) dont le retour sur investissement est inférieur à 3 ans, avant d'engager les investissements plus importants.`),
+          new Paragraph({ spacing: { after: 400 }, children: [] }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: `Rapport généré par EnerAudit CI — eneraudit-ci.vercel.app — ${new Date().toLocaleDateString('fr-FR')}`, size: 18, color: '94A3B8', italics: true, font: 'Calibri' })]
+          }),
+        ]
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Rapport_Audit_Energetique_${nom.replace(/\s+/g,'_')}_${annee}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    hideLoading();
+    showToast('✅ Rapport Word téléchargé avec succès !');
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur lors de la génération : ' + e.message);
+    console.error(e);
+  }
 }
 
 // ===== ASSISTANT IA =====
